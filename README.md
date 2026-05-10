@@ -139,6 +139,8 @@ Common optional variables:
 CYBERBOSS_RUNTIME=codex
 CYBERBOSS_CODEX_ENDPOINT=ws://127.0.0.1:8765
 CYBERBOSS_CODEX_COMMAND=
+CYBERBOSS_CODEX_MODEL=
+CYBERBOSS_CODEX_MODEL_PROVIDER=
 CYBERBOSS_CLAUDE_COMMAND=claude
 CYBERBOSS_CLAUDE_MODEL=
 CYBERBOSS_CLAUDE_CONTEXT_WINDOW=
@@ -170,6 +172,10 @@ What these do:
   Reuse an existing shared Codex app-server instead of spawning a private runtime.
 - `CYBERBOSS_CODEX_COMMAND`
   Override the Codex launcher when `codex` is not directly on your `PATH`.
+- `CYBERBOSS_CODEX_MODEL`
+  Force Codex turns to use a specific model. Leave empty to use Codex's default model selection.
+- `CYBERBOSS_CODEX_MODEL_PROVIDER`
+  Force Codex turns to use a specific provider, such as `ollama` for local models. Leave empty for the default cloud provider.
 - `CYBERBOSS_CLAUDE_COMMAND`
   Override the Claude launcher. Default is `claude`.
 - `CYBERBOSS_CLAUDE_MODEL`
@@ -213,6 +219,21 @@ Why this matters:
 If you want the strongest "push" effect, do not immediately rewrite the persona template by hand. Let the agent develop its rhythm through real conversation first, then edit only the parts that are clearly wrong.
 
 If you plan to use shared mode, set `CYBERBOSS_WORKSPACE_ROOT` before the first start so `shared:open` resolves the right thread for the right project.
+
+If you use a local Codex provider such as Ollama, prefer a small wrapper script instead of putting provider flags directly into `CYBERBOSS_CODEX_COMMAND`. Copy [templates/codex-local-provider.sh](./templates/codex-local-provider.sh) to `${HOME}/.cyberboss/codex-local`, make it executable, and point Cyberboss at it:
+
+```bash
+cp ./templates/codex-local-provider.sh "${HOME}/.cyberboss/codex-local"
+chmod +x "${HOME}/.cyberboss/codex-local"
+```
+
+```dotenv
+CYBERBOSS_CODEX_COMMAND=/absolute/path/to/.cyberboss/codex-local
+CYBERBOSS_CODEX_MODEL_PROVIDER=ollama
+CYBERBOSS_CODEX_MODEL=gemma4:26b-32k
+```
+
+The template keeps cloud and local startup behavior in one command. When you switch back to the cloud provider, clear `CYBERBOSS_CODEX_MODEL_PROVIDER` and `CYBERBOSS_CODEX_MODEL`, then restart the shared bridge so the Codex app-server is launched with the new command environment.
 
 When `CYBERBOSS_RUNTIME=claudecode`, Cyberboss also upserts a workspace-local `.mcp.json` entry for `cyberboss_tools` before starting Claude, and launches Claude with that MCP config explicitly attached. That is how Claude discovers the Cyberboss project tools without any global registration.
 

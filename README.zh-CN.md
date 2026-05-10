@@ -144,6 +144,8 @@ CYBERBOSS_WORKSPACE_ROOT=/绝对路径/你的项目目录
 CYBERBOSS_RUNTIME=codex
 CYBERBOSS_CODEX_ENDPOINT=ws://127.0.0.1:8765
 CYBERBOSS_CODEX_COMMAND=
+CYBERBOSS_CODEX_MODEL=
+CYBERBOSS_CODEX_MODEL_PROVIDER=
 CYBERBOSS_CLAUDE_COMMAND=claude
 CYBERBOSS_CLAUDE_MODEL=
 CYBERBOSS_CLAUDE_CONTEXT_WINDOW=
@@ -175,6 +177,10 @@ CYBERBOSS_LOCATION_BATTERY_HISTORY_LIMIT=100
   复用已有的共享 Codex app-server，而不是新起私有 runtime。
 - `CYBERBOSS_CODEX_COMMAND`
   当 `codex` 不在 `PATH` 上时，自定义 Codex 启动命令。
+- `CYBERBOSS_CODEX_MODEL`
+  强制 Codex turn 使用指定模型。留空则使用 Codex 默认模型选择。
+- `CYBERBOSS_CODEX_MODEL_PROVIDER`
+  强制 Codex turn 使用指定 provider，例如本地模型可填 `ollama`。留空则使用默认云端 provider。
 - `CYBERBOSS_CLAUDE_COMMAND`
   自定义 Claude 启动命令，默认是 `claude`。
 - `CYBERBOSS_CLAUDE_MODEL`
@@ -221,6 +227,21 @@ CYBERBOSS_LOCATION_BATTERY_HISTORY_LIMIT=100
 另外，如果你想要更强的“push 感”，建议一开始先不要主动大改 instructions 模板。先让 agent 在真实交流里自己更新行为，再回头只修明显不对的部分。
 
 如果你要跑共享线程，建议也在第一次启动前就把 `CYBERBOSS_WORKSPACE_ROOT` 配好。这样 `shared:open` 会优先接到你当前项目对应的那条线程，而不是回退到别的历史绑定。
+
+如果你使用 Ollama 这类本地 Codex provider，推荐用一个很小的 wrapper script，不要直接把 provider flags 塞进 `CYBERBOSS_CODEX_COMMAND`。把 [templates/codex-local-provider.sh](./templates/codex-local-provider.sh) 复制到 `${HOME}/.cyberboss/codex-local`，给它执行权限，并让 Cyberboss 使用这个 wrapper：
+
+```bash
+cp ./templates/codex-local-provider.sh "${HOME}/.cyberboss/codex-local"
+chmod +x "${HOME}/.cyberboss/codex-local"
+```
+
+```dotenv
+CYBERBOSS_CODEX_COMMAND=/绝对路径/.cyberboss/codex-local
+CYBERBOSS_CODEX_MODEL_PROVIDER=ollama
+CYBERBOSS_CODEX_MODEL=gemma4:26b-32k
+```
+
+这个模板会把云端和本地启动逻辑收敛在同一个 command 里。切回云端 provider 时，清空 `CYBERBOSS_CODEX_MODEL_PROVIDER` 和 `CYBERBOSS_CODEX_MODEL`，然后重启共享桥接，让 Codex app-server 用新的 command 环境启动。
 
 当 `CYBERBOSS_RUNTIME=claudecode` 时，Cyberboss 会在当前工作区自动补写 `.mcp.json` 里的 `cyberboss_tools`，并在启动 Claude 时显式挂上这份 MCP 配置。Claude 能发现 Cyberboss project tools，靠的就是这条项目本地配置，而不是全局注册。
 

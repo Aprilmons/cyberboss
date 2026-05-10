@@ -62,6 +62,8 @@ function readConfig() {
     syncBufferDir: path.join(stateDir, "sync-buffers"),
     codexEndpoint: readTextEnv("CYBERBOSS_CODEX_ENDPOINT"),
     codexCommand: readTextEnv("CYBERBOSS_CODEX_COMMAND"),
+    codexModel: readTextEnv("CYBERBOSS_CODEX_MODEL"),
+    codexModelProvider: readTextEnv("CYBERBOSS_CODEX_MODEL_PROVIDER"),
     claudeCommand: readTextEnv("CYBERBOSS_CLAUDE_COMMAND") || "claude",
     claudeModel: readTextEnv("CYBERBOSS_CLAUDE_MODEL") || "",
     claudeContextWindow: readIntEnv("CYBERBOSS_CLAUDE_CONTEXT_WINDOW"),

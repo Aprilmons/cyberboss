@@ -1160,7 +1160,9 @@ class CyberbossApp {
     const context = threadState?.context?.runtimeId === runtimeName
       ? threadState.context
       : this.threadStateStore.getLatestContext(runtimeName);
-    const storedModel = sessionStore.getRuntimeParamsForWorkspace(bindingKey, workspaceRoot).model || "";
+    const runtimeParams = sessionStore.getRuntimeParamsForWorkspace(bindingKey, workspaceRoot);
+    const storedModel = runtimeParams.model || "";
+    const storedModelProvider = runtimeParams.modelProvider || this.runtimeAdapter.describe().modelProvider || "";
     const isLikelyCodexModel = /gpt|o1|o3|codex/i.test(storedModel);
     const effectiveModel = (runtimeName === "claudecode" && isLikelyCodexModel)
       ? (this.config.claudeModel || "")
@@ -1172,6 +1174,7 @@ class CyberbossApp {
       `📊 status: ${threadState?.status || "idle"}`,
       `🤖 runtime: ${runtimeName}`,
       `🤖 model: ${effectiveModel || "(default)"}`,
+      `🤖 provider: ${storedModelProvider || "(default)"}`,
     ];
     if (pendingThreadId) {
       lines.splice(2, 0, `🔁 target: ${pendingThreadId}`);
@@ -1238,10 +1241,12 @@ class CyberbossApp {
         normalized,
         threadId,
       });
+      const runtimeParams = sessionStore.getRuntimeParamsForWorkspace(bindingKey, workspaceRoot);
       await this.runtimeAdapter.refreshThreadInstructions({
         threadId,
         workspaceRoot,
-        model: sessionStore.getRuntimeParamsForWorkspace(bindingKey, workspaceRoot).model,
+        model: runtimeParams.model,
+        modelProvider: runtimeParams.modelProvider,
       });
     } catch (error) {
       await this.channelAdapter.sendText({

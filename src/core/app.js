@@ -85,6 +85,7 @@ class CyberbossApp {
     this.streamDelivery = new StreamDelivery({
       channelAdapter: this.channelAdapter,
       sessionStore: this.runtimeAdapter.getSessionStore(),
+      runtimeId: this.runtimeAdapter.describe().id,
       onDeferredSystemReply: (payload) => this.deferSystemReply(payload),
     });
     this.pendingOperationByRunKey = new Map();
@@ -1061,7 +1062,6 @@ class CyberbossApp {
     const workspaceRoot = this.resolveWorkspaceRoot(bindingKey);
     const sessionStore = this.runtimeAdapter.getSessionStore();
     const threadId = sessionStore.getThreadIdForWorkspace(bindingKey, workspaceRoot);
-    const pendingThreadId = sessionStore.getPendingThreadIdForWorkspace?.(bindingKey, workspaceRoot) || "";
     const threadState = threadId ? this.threadStateStore.getThreadState(threadId) : null;
     const runtimeName = this.runtimeAdapter.describe().id || "runtime";
     const context = threadState?.context?.runtimeId === runtimeName
@@ -1070,22 +1070,16 @@ class CyberbossApp {
     const runtimeParams = sessionStore.getRuntimeParamsForWorkspace(bindingKey, workspaceRoot);
     const storedModel = runtimeParams.model || "";
     const storedModelProvider = runtimeParams.modelProvider || this.runtimeAdapter.describe().modelProvider || "";
-    const isLikelyCodexModel = /gpt|o1|o3|codex/i.test(storedModel);
-    const effectiveModel = (runtimeName === "claudecode" && isLikelyCodexModel)
-      ? (this.config.claudeModel || "")
-      : storedModel;
+    const effectiveModel = this.runtimeAdapter.describe().model || storedModel;
 
     const lines = [
       `📍 workspace: ${workspaceRoot}`,
-      `🧵 thread: ${threadId || "(none)"}${pendingThreadId ? " (pending verification)" : ""}`,
+      `🧵 thread: ${threadId || "(none)"}`,
       `📊 status: ${threadState?.status || "idle"}`,
       `🤖 runtime: ${runtimeName}`,
       `🤖 model: ${effectiveModel || "(default)"}`,
       `🤖 provider: ${storedModelProvider || "(default)"}`,
     ];
-    if (pendingThreadId) {
-      lines.splice(2, 0, `🔁 target: ${pendingThreadId}`);
-    }
     lines.push(formatContextStatusLine({
       runtimeName,
       context,
@@ -1109,7 +1103,6 @@ class CyberbossApp {
     if (typeof this.runtimeAdapter.startFreshThreadDraft === "function") {
       await this.runtimeAdapter.startFreshThreadDraft({ bindingKey, workspaceRoot });
     }
-    this.runtimeAdapter.getSessionStore().clearPendingThreadIdForWorkspace?.(bindingKey, workspaceRoot);
     this.runtimeAdapter.getSessionStore().clearThreadIdForWorkspace(bindingKey, workspaceRoot);
     await this.channelAdapter.sendText({
       userId: normalized.senderId,
@@ -1228,29 +1221,13 @@ class CyberbossApp {
     });
     const workspaceRoot = this.resolveWorkspaceRoot(bindingKey);
     const sessionStore = this.runtimeAdapter.getSessionStore();
-    const runtimeId = this.runtimeAdapter.describe().id || "";
+    const runtimeParams = sessionStore.getRuntimeParamsForWorkspace(bindingKey, workspaceRoot);
     const resumed = await this.runtimeAdapter.resumeThread({
       threadId: targetThreadId,
       workspaceRoot,
+      model: runtimeParams.model,
+      modelProvider: runtimeParams.modelProvider,
     });
-    if (runtimeId === "claudecode") {
-      sessionStore.setThreadIdForWorkspace(
-        bindingKey,
-        workspaceRoot,
-        resumed?.threadId || targetThreadId,
-      );
-      sessionStore.setPendingThreadIdForWorkspace?.(
-        bindingKey,
-        workspaceRoot,
-        resumed?.threadId || targetThreadId,
-      );
-      await this.channelAdapter.sendText({
-        userId: normalized.senderId,
-        text: `🔁 Thread switch requested\nworkspace: ${workspaceRoot}\ntarget: ${resumed?.threadId || targetThreadId}\nIt will be verified on the next normal message.`,
-        contextToken: normalized.contextToken,
-      });
-      return;
-    }
     sessionStore.setThreadIdForWorkspace(
       bindingKey,
       workspaceRoot,

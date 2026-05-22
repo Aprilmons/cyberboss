@@ -126,12 +126,15 @@ function createClaudeCodeRuntimeAdapter(config) {
     }
 
     let client = await ensureClient(normalizedWorkspaceRoot, desiredModel);
+    console.log(`[claudecode-runtime] resolveClient alive=${client.alive} threadId=${normalizedThreadId} matches=${clientMatchesThread(client, normalizedThreadId)}`);
     if (!client.alive || (normalizedThreadId && !clientMatchesThread(client, normalizedThreadId))) {
       if (client.alive && normalizedThreadId && !clientMatchesThread(client, normalizedThreadId)) {
         await closeWorkspaceClient(normalizedWorkspaceRoot);
         client = await ensureClient(normalizedWorkspaceRoot, desiredModel);
       }
+      console.log(`[claudecode-runtime] connecting client alive=${client.alive} resume=${normalizedThreadId}`);
       await client.connect(normalizedThreadId);
+      console.log(`[claudecode-runtime] connected session=${client.sessionId}`);
     }
 
     return { client, threadId: normalizedThreadId || normalizeThreadId(client.sessionId) };

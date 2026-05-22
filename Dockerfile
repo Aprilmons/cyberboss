@@ -11,6 +11,11 @@ COPY . .
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
+# Claude Code refuses --dangerously-skip-permissions as root, so run as non-root
+RUN useradd -m -u 1001 cyberboss
+RUN mkdir -p /data && chown cyberboss:cyberboss /data
+USER cyberboss
+
 # All state and Claude sessions live under /data (Railway Volume)
 ENV HOME=/data
 ENV CYBERBOSS_STATE_DIR=/data/cyberboss

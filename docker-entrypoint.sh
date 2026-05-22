@@ -10,6 +10,9 @@ fi
 
 # Create required directories
 mkdir -p "$CYBERBOSS_STATE_DIR/accounts"
+
+# Clear stale session state so cyberboss starts a fresh Claude Code session
+rm -f "$CYBERBOSS_STATE_DIR/sessions.json"
 mkdir -p "$CYBERBOSS_WORKSPACE_ROOT"
 mkdir -p "$HOME/.claude"
 

@@ -48,20 +48,14 @@ function createClaudeCodeRuntimeAdapter(config) {
       }
       await closeWorkspaceClient(workspaceRoot);
     }
-    const skipMcp = process.env.CYBERBOSS_CLAUDE_SKIP_MCP === "true";
-    let mcpConfigPaths = [];
-    if (!skipMcp) {
-      const projectSettings = ensureClaudeProjectMcpConfig({
-        workspaceRoot,
-        cyberbossHome: process.env.CYBERBOSS_HOME || path.resolve(__dirname, "..", "..", "..", ".."),
-      });
-      console.log(
-        `[claudecode-runtime] workspace=${workspaceRoot} mcp_config=${projectSettings.configPath} server=${projectSettings.serverName}`
-      );
-      mcpConfigPaths = [projectSettings.configPath];
-    } else {
-      console.log(`[claudecode-runtime] workspace=${workspaceRoot} mcp_config=skipped (CYBERBOSS_CLAUDE_SKIP_MCP=true)`);
-    }
+    const projectSettings = ensureClaudeProjectMcpConfig({
+      workspaceRoot,
+      cyberbossHome: process.env.CYBERBOSS_HOME || path.resolve(__dirname, "..", "..", "..", ".."),
+    });
+    console.log(
+      `[claudecode-runtime] workspace=${workspaceRoot} mcp_config=${projectSettings.configPath} server=${projectSettings.serverName}`
+    );
+    const mcpConfigPaths = [projectSettings.configPath];
     const client = new ClaudeCodeProcessClient({
       command: config.claudeCommand || "claude",
       cwd: workspaceRoot,

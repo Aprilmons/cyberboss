@@ -9,14 +9,15 @@ function ensureClaudeProjectMcpConfig({ workspaceRoot, cyberbossHome = "" } = {}
 
   const configPath = path.join(normalizedWorkspaceRoot, ".mcp.json");
   const current = readJsonObject(configPath);
+  const skipToolsMcp = process.env.CYBERBOSS_CLAUDE_SKIP_TOOLS_MCP === "true";
+  const toolsServers = skipToolsMcp ? {} : {
+    cyberboss_tools: buildClaudeProjectMcpServerConfig({ workspaceRoot: normalizedWorkspaceRoot, cyberbossHome }),
+  };
   const next = {
     ...current,
     mcpServers: {
       ...(current.mcpServers && typeof current.mcpServers === "object" ? current.mcpServers : {}),
-      cyberboss_tools: buildClaudeProjectMcpServerConfig({
-        workspaceRoot: normalizedWorkspaceRoot,
-        cyberbossHome,
-      }),
+      ...toolsServers,
     },
   };
 
@@ -26,7 +27,7 @@ function ensureClaudeProjectMcpConfig({ workspaceRoot, cyberbossHome = "" } = {}
 
   return {
     configPath,
-    serverName: "cyberboss_tools",
+    serverName: skipToolsMcp ? "(skipped)" : "cyberboss_tools",
     config: next,
   };
 }

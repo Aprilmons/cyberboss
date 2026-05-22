@@ -61,7 +61,7 @@ class ClaudeCodeProcessClient {
       ? this.mcpConfigPaths.join(",")
       : "(none)";
     console.log(
-      `[claudecode-runtime] launching command=${this.command} cwd=${this.cwd} mcp_config=${mcpLabel}`
+      `[claudecode-runtime] launching command=${this.command} cwd=${this.cwd} mcp_config=${mcpLabel} args=${JSON.stringify(args)}`
     );
     const child = spawn(this.command, args, {
       cwd: this.cwd,

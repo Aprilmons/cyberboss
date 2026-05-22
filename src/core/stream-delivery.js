@@ -213,6 +213,7 @@ class StreamDelivery {
 
   captureTurnCompletionText(state, text) {
     const normalized = trimOuterBlankLines(normalizeLineEndings(text));
+    console.log(`[stream-delivery] captureTurnCompletion thread=${state.threadId} textLen=${(normalized || "").length} existingItems=${state.itemOrder.length}`);
     if (!normalized || state.itemOrder.length > 0) {
       return;
     }
@@ -295,6 +296,7 @@ class StreamDelivery {
     }
 
     const pendingDeliveries = collectPendingReplyDeliveries(state, { force });
+    console.log(`[stream-delivery] flushNow thread=${state.threadId} pendingDeliveries=${pendingDeliveries.length} items=${state.itemOrder.length} sentItems=${state.sentItemIds.size}`);
     if (!pendingDeliveries.length) {
       return;
     }

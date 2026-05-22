@@ -193,11 +193,13 @@ class StreamDelivery {
     }
     const linked = this.sessionStore.findBindingForThreadId(state.threadId);
     if (!linked?.bindingKey) {
+      console.log(`[stream-delivery] attachReplyTarget: no binding found for thread=${state.threadId}`);
       return;
     }
     state.bindingKey = linked.bindingKey;
     if (!state.replyTarget) {
       const target = this.replyTargetByBindingKey.get(linked.bindingKey);
+      console.log(`[stream-delivery] attachReplyTarget: binding=${linked.bindingKey} target=${target ? "found" : "missing"}`);
       state.replyTarget = target;
     }
     if (!state.deferredReplyPrefix) {
@@ -283,6 +285,7 @@ class StreamDelivery {
 
   async flushNow(state, { force }) {
     if (!state.replyTarget) {
+      console.log(`[stream-delivery] flush skipped: no replyTarget thread=${state.threadId} turn=${state.turnId} items=${state.itemOrder.length} bindingKey=${state.bindingKey || "(none)"}`);
       return;
     }
 

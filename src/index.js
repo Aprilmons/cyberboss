@@ -134,9 +134,12 @@ async function main() {
   }
 
   if (command === "tool-mcp-server") {
+    console.error("[tool-mcp-server] starting...");
     const runtimeId = readFlagValue(argv.slice(1), "--runtime-id") || "";
     const workspaceRoot = readFlagValue(argv.slice(1), "--workspace-root") || process.cwd();
+    console.error(`[tool-mcp-server] creating project tooling stateDir=${config.stateDir}`);
     const { toolHost } = createProjectTooling(config);
+    console.error(`[tool-mcp-server] ready, tools=${toolHost.listTools().length}`);
     runToolMcpServer({ toolHost, runtimeId, workspaceRoot });
     return;
   }

@@ -101,6 +101,7 @@ class ClaudeCodeProcessClient {
     });
 
     child.on("close", (code) => {
+      console.log(`[claudecode-runtime] process exited code=${code ?? "unknown"} session=${this.activeThreadId || this.sessionId}`);
       this.rejectSessionWaiters(new Error(`claudecode process closed with code ${code ?? "unknown"}`));
       this.alive = false;
       this.child = null;

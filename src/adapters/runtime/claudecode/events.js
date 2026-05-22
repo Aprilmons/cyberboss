@@ -69,6 +69,16 @@ function mapClaudeCodeMessageToRuntimeEvent(message, raw) {
           text: message.error || "❌ Runtime process exited unexpectedly",
         },
       };
+    case "assistant.text":
+      return {
+        type: "runtime.reply.completed",
+        payload: {
+          threadId: message.sessionId,
+          turnId: message.turnId,
+          itemId: `item-${message.turnId}`,
+          text: typeof message.text === "string" ? message.text : "",
+        },
+      };
     case "session.id":
       return null;
     default:

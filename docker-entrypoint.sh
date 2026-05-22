@@ -1,12 +1,10 @@
 #!/bin/sh
 set -e
 
-# Fix /data permissions so non-root cyberboss user can write (Railway mounts volume as root)
-mkdir -p /data
-chown -R cyberboss:cyberboss /data
-
-# Drop privileges and re-exec as cyberboss
+# If running as root: fix /data permissions then drop to cyberboss user
 if [ "$(id -u)" = "0" ]; then
+  mkdir -p /data
+  chown -R cyberboss:cyberboss /data
   exec gosu cyberboss "$0" "$@"
 fi
 

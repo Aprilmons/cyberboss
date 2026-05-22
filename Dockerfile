@@ -1,5 +1,8 @@
 FROM node:22-slim
 
+# Install gosu for privilege dropping in entrypoint
+RUN apt-get update && apt-get install -y gosu && rm -rf /var/lib/apt/lists/*
+
 # Install Claude Code CLI
 RUN npm install -g @anthropic-ai/claude-code
 
@@ -13,8 +16,6 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Claude Code refuses --dangerously-skip-permissions as root, so run as non-root
 RUN useradd -m -u 1001 cyberboss
-RUN mkdir -p /data && chown cyberboss:cyberboss /data
-USER cyberboss
 
 # All state and Claude sessions live under /data (Railway Volume)
 ENV HOME=/data

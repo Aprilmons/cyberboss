@@ -16,8 +16,10 @@ rm -f "$CYBERBOSS_STATE_DIR/sessions.json"
 mkdir -p "$CYBERBOSS_WORKSPACE_ROOT"
 mkdir -p "$HOME/.claude"
 
-# Initialize workspace .mcp.json if not present
-if [ ! -f "$CYBERBOSS_WORKSPACE_ROOT/.mcp.json" ]; then
+# Build workspace .mcp.json (rebuilt every start so env var toggles take effect)
+if [ "$CYBERBOSS_CLAUDE_SKIP_BRAIN_MCP" = "true" ]; then
+  echo '{"mcpServers":{}}' > "$CYBERBOSS_WORKSPACE_ROOT/.mcp.json"
+else
   cat > "$CYBERBOSS_WORKSPACE_ROOT/.mcp.json" << 'EOF'
 {
   "mcpServers": {

@@ -238,9 +238,11 @@ class CyberbossApp {
     }
 
     const point = result?.appended?.point || null;
+    const currentStay = result?.appended?.currentStay || null;
     const movementEvent = result?.appended?.movementEvent || null;
     const triggerText = buildLocationTriggerSystemText(point?.trigger);
-    if (!triggerText && !movementEvent) {
+    const placeText = !triggerText ? buildPlaceTagSystemText(point?.placeTag, currentStay?.placeTag) : "";
+    if (!triggerText && !placeText && !movementEvent) {
       return;
     }
 
@@ -267,6 +269,15 @@ class CyberbossApp {
         senderId,
         workspaceRoot,
         text: triggerText,
+        createdAt: normalizeIsoTime(point?.receivedAt) || normalizeIsoTime(point?.timestamp) || new Date().toISOString(),
+      });
+    } else if (placeText && point?.id) {
+      this.systemMessageQueue.enqueue({
+        id: `location-place:${point.id}`,
+        accountId: this.activeAccountId,
+        senderId,
+        workspaceRoot,
+        text: placeText,
         createdAt: normalizeIsoTime(point?.receivedAt) || normalizeIsoTime(point?.timestamp) || new Date().toISOString(),
       });
     }
@@ -1780,6 +1791,18 @@ function buildLocationTriggerSystemText(trigger) {
       return "User arrives home.";
     case "leave_home":
       return "User leaves home.";
+    default:
+      return "";
+  }
+}
+
+function buildPlaceTagSystemText(pointPlaceTag, stayPlaceTag) {
+  const tag = normalizeText(pointPlaceTag) || normalizeText(stayPlaceTag);
+  switch (tag) {
+    case "home":
+      return "System context: user's current location is at home.";
+    case "work":
+      return "System context: user's current location is at work.";
     default:
       return "";
   }

@@ -41,10 +41,8 @@ if [ -n "$CYBERBOSS_WEIXIN_ACCOUNT_JSON" ]; then
   fi
 fi
 
-# Copy weixin-instructions.md from template if not already customized
-if [ ! -f "$CYBERBOSS_STATE_DIR/weixin-instructions.md" ]; then
-  cp /app/templates/weixin-instructions.md "$CYBERBOSS_STATE_DIR/weixin-instructions.md"
-fi
+# Always sync weixin-instructions.md from template on startup
+cp /app/templates/weixin-instructions.md "$CYBERBOSS_STATE_DIR/weixin-instructions.md"
 
 # Wake up ombre-brain MCP server before starting (Railway services sleep when idle)
 echo "[entrypoint] warming up ombre-brain..."

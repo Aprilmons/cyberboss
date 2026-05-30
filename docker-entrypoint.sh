@@ -8,6 +8,9 @@ if [ "$(id -u)" = "0" ]; then
   exec gosu cyberboss "$0" "$@"
 fi
 
+# Ensure HOME is /data even if gosu reset it from passwd
+export HOME=/data
+
 # Create required directories
 mkdir -p "$CYBERBOSS_STATE_DIR/accounts"
 

@@ -15,7 +15,8 @@ COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Claude Code refuses --dangerously-skip-permissions as root, so run as non-root
-RUN useradd -m -u 1001 cyberboss
+# Home set to /data so passwd entry matches HOME env var (gosu reads passwd)
+RUN useradd -u 1001 -d /data cyberboss
 
 # All state and Claude sessions live under /data (Railway Volume)
 ENV HOME=/data

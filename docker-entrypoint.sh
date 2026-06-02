@@ -33,6 +33,13 @@ else
     "zhipu-web-search": {
       "type": "http",
       "url": "https://open.bigmodel.cn/api/mcp-broker/proxy/web-search/mcp?Authorization=${ZHIPU_API_KEY:-}"
+    },
+    "co-reading": {
+      "type": "http",
+      "url": "https://co-reading-mcp-production.up.railway.app/mcp",
+      "headers": {
+        "Authorization": "Bearer 3a337e64a3763374fee04c06305402e1"
+      }
     }
   }
 }

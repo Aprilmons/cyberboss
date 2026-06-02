@@ -31,8 +31,10 @@ else
       "url": "https://solbrain-production.up.railway.app/mcp"
     },
     "zhipu-web-search": {
-      "type": "http",
-      "url": "https://open.bigmodel.cn/api/mcp-broker/proxy/web-search/mcp?Authorization=${ZHIPU_API_KEY:-}"
+      "command": "cc-zhipu-web-search",
+      "env": {
+        "BIGMODEL_API_KEY": "${ZHIPU_API_KEY:-}"
+      }
     },
     "co-reading": {
       "type": "http",

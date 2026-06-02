@@ -3,8 +3,8 @@ FROM node:22-slim
 # Install gosu for privilege dropping in entrypoint
 RUN apt-get update && apt-get install -y gosu && rm -rf /var/lib/apt/lists/*
 
-# Install Claude Code CLI
-RUN npm install -g @anthropic-ai/claude-code
+# Install Claude Code CLI and MCP servers
+RUN npm install -g @anthropic-ai/claude-code @iflow-mcp/cc-zhipu-web-search
 
 WORKDIR /app
 COPY package.json package-lock.json ./

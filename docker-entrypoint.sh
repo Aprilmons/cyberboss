@@ -23,16 +23,20 @@ mkdir -p "$HOME/.claude"
 if [ "$CYBERBOSS_CLAUDE_SKIP_BRAIN_MCP" = "true" ]; then
   echo '{"mcpServers":{}}' > "$CYBERBOSS_WORKSPACE_ROOT/.mcp.json"
 else
-  cat > "$CYBERBOSS_WORKSPACE_ROOT/.mcp.json" << 'EOF'
+  cat > "$CYBERBOSS_WORKSPACE_ROOT/.mcp.json" << MCPEOF
 {
   "mcpServers": {
     "ombre-brain": {
       "type": "http",
       "url": "https://solbrain-production.up.railway.app/mcp"
+    },
+    "zhipu-web-search": {
+      "type": "http",
+      "url": "https://open.bigmodel.cn/api/mcp-broker/proxy/web-search/mcp?Authorization=${ZHIPU_API_KEY:-}"
     }
   }
 }
-EOF
+MCPEOF
 fi
 
 # Write WeChat account files from env vars if provided

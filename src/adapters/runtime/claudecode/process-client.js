@@ -218,6 +218,16 @@ class ClaudeCodeProcessClient {
         return;
       }
     }
+    const usage = raw?.usage;
+    if (usage && typeof usage === "object") {
+      this.emit({
+        type: "context.updated",
+        usage,
+        modelUsage: raw.modelUsage || null,
+        turnId: this.pendingTurnId,
+        sessionId: this.activeThreadId || this.sessionId,
+      }, raw);
+    }
     this.emit({
       type: "turn.completed",
       turnId: this.pendingTurnId,

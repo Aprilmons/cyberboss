@@ -21,7 +21,10 @@ mkdir -p "$CYBERBOSS_WORKSPACE_ROOT"
 mkdir -p "$CODEX_HOME"
 
 # Seed Codex auth from Railway env vars when the volume does not already have a login.
-if [ -n "$OPENAI_API_KEY" ]; then
+if [ -n "$CODEX_AUTH_JSON" ]; then
+  printf '%s' "$CODEX_AUTH_JSON" > "$CODEX_HOME/auth.json"
+  chmod 600 "$CODEX_HOME/auth.json"
+elif [ -n "$OPENAI_API_KEY" ]; then
   printenv OPENAI_API_KEY | codex login --with-api-key >/dev/null
 elif [ -n "$CODEX_ACCESS_TOKEN" ]; then
   printenv CODEX_ACCESS_TOKEN | codex login --with-access-token >/dev/null

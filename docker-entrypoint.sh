@@ -10,42 +10,26 @@ fi
 
 # Ensure HOME is /data even if gosu reset it from passwd
 export HOME=/data
+export CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
 
 # Create required directories
 mkdir -p "$CYBERBOSS_STATE_DIR/accounts"
 
-# Clear stale session state so cyberboss starts a fresh Claude Code session
+# Clear stale session state so cyberboss starts a fresh Codex session
 rm -f "$CYBERBOSS_STATE_DIR/sessions.json"
 mkdir -p "$CYBERBOSS_WORKSPACE_ROOT"
-mkdir -p "$HOME/.claude"
+mkdir -p "$CODEX_HOME"
 
-# Build workspace .mcp.json (rebuilt every start so env var toggles take effect)
-if [ "$CYBERBOSS_CLAUDE_SKIP_BRAIN_MCP" = "true" ]; then
-  echo '{"mcpServers":{}}' > "$CYBERBOSS_WORKSPACE_ROOT/.mcp.json"
+# Configure Codex MCP servers (rebuilt every start so env var toggles take effect)
+if [ "$CYBERBOSS_CODEX_SKIP_EXTERNAL_MCP" = "true" ] || [ "$CYBERBOSS_CLAUDE_SKIP_BRAIN_MCP" = "true" ]; then
+  codex mcp remove ombre-brain >/dev/null 2>&1 || true
+  codex mcp remove zhipu-web-search >/dev/null 2>&1 || true
+  codex mcp remove co-reading >/dev/null 2>&1 || true
 else
-  cat > "$CYBERBOSS_WORKSPACE_ROOT/.mcp.json" << MCPEOF
-{
-  "mcpServers": {
-    "ombre-brain": {
-      "type": "http",
-      "url": "https://solbrain-production.up.railway.app/mcp"
-    },
-    "zhipu-web-search": {
-      "command": "cc-zhipu-web-search",
-      "env": {
-        "BIGMODEL_API_KEY": "${ZHIPU_API_KEY:-}"
-      }
-    },
-    "co-reading": {
-      "type": "http",
-      "url": "https://co-reading-mcp-production.up.railway.app/mcp",
-      "headers": {
-        "Authorization": "Bearer 3a337e64a3763374fee04c06305402e1"
-      }
-    }
-  }
-}
-MCPEOF
+  export CO_READING_MCP_TOKEN="${CO_READING_MCP_TOKEN:-3a337e64a3763374fee04c06305402e1}"
+  codex mcp add ombre-brain --url https://solbrain-production.up.railway.app/mcp >/dev/null
+  codex mcp add zhipu-web-search --env "BIGMODEL_API_KEY=${ZHIPU_API_KEY:-}" -- cc-zhipu-web-search >/dev/null
+  codex mcp add co-reading --url https://co-reading-mcp-production.up.railway.app/mcp --bearer-token-env-var CO_READING_MCP_TOKEN >/dev/null
 fi
 
 # Write WeChat account files from env vars if provided
